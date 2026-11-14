@@ -8,6 +8,7 @@ dependencies = [
 
 [project.scripts]
 analyse = "blunder.analysis:analyse"
+sample = "blunder.analysis:sample"
 
 [build-system]
 requires = ["hatchling"]
