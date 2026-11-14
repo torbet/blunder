@@ -68,8 +68,3 @@ class FeatureBase(BaseModel):
 
 class Feature(Timestamped, FeatureBase):
     game_id: UUID
-
-
-class LabelBase(BaseModel):
-    color: Color
-    ply: int

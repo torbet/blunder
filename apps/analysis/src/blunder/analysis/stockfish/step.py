@@ -39,6 +39,6 @@ class StockfishStep(PipelineStep):
             infos = [await engine.analyse(board, self.limit, game=game.id) for board in game.positions()]
 
             for move, (before, after) in zip(game.moves, pairwise(infos), strict=True):
-                feature = ctx.feature(game, move.ply)
+                feature = ctx.feature(move)
                 feature.evaluation = after["score"].white().score(mate_score=MATE)
                 feature.best = before["pv"][0].uci()

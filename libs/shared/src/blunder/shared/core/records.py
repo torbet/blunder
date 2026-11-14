@@ -7,7 +7,7 @@ import chess
 from pydantic import BaseModel, Field, TypeAdapter
 
 from blunder.shared.models.analysis import AnalysisBase
-from blunder.shared.models.game import FeatureBase, GameBase, LabelBase, MoveBase
+from blunder.shared.models.game import Color, FeatureBase, GameBase, MoveBase
 
 
 class RecordBase(BaseModel):
@@ -18,16 +18,27 @@ class AnalysisRecord(RecordBase, AnalysisBase):
     type: Literal["analysis"] = "analysis"
 
 
-class GameRecord(RecordBase, GameBase):
-    type: Literal["game"] = "game"
-    moves: list[MoveBase]
-    labels: list[LabelBase] = Field(default_factory=list)
+class MoveRecord(MoveBase):
+    label: bool = False
     features: list[FeatureBase] = Field(default_factory=list)
 
     @property
-    def cheating(self) -> tuple[bool, bool]:
-        colors = {label.color for label in self.labels}
-        return "white" in colors, "black" in colors
+    def color(self) -> Color:
+        return "black" if self.ply % 2 else "white"
+
+
+class GameRecord(RecordBase, GameBase):
+    type: Literal["game"] = "game"
+    moves: list[MoveRecord]
+
+    @property
+    def label(self) -> tuple[bool, bool]:
+        cheaters = {move.color for move in self.moves if move.label}
+        return "white" in cheaters, "black" in cheaters
+
+    @property
+    def features(self) -> list[FeatureBase]:
+        return [feature for move in self.moves for feature in move.features]
 
     def positions(self) -> Iterator[chess.Board]:
         board = chess.Board()

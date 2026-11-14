@@ -12,11 +12,11 @@ class MaiaStep(PipelineStep):
 
     async def run(self, ctx: PipelineContext) -> None:
         games = ctx.games
-        moves = [(game, move) for game in games for move in game.moves]
+        moves = [move for game in games for move in game.moves]
         predictions = iter(self.maia.predict(chain.from_iterable(map(Position.replay, games))))
 
-        for (game, move), prediction in zip(moves, predictions, strict=True):
-            feature = ctx.feature(game, move.ply)
+        for move, prediction in zip(moves, predictions, strict=True):
+            feature = ctx.feature(move)
             feature.probability = prediction.policy[move.uci]
             feature.entropy = prediction.entropy
             feature.ponder = prediction.ponder

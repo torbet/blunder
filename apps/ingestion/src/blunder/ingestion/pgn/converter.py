@@ -7,8 +7,8 @@ from pathlib import Path
 import chess.pgn
 from rich import progress
 
-from blunder.shared.core.records import GameRecord
-from blunder.shared.models.game import Color, Control, Elos, LabelBase, MoveBase, Players, Result, Source
+from blunder.shared.core.records import GameRecord, MoveRecord
+from blunder.shared.models.game import Color, Control, Elos, Players, Result, Source
 
 RESULTS: dict[str, Result] = {
     "1-0": "white",
@@ -74,20 +74,17 @@ class Converter:
         clocks = {"white": control.base, "black": control.base}
         engines = [color for color, header in ENGINES.items() if headers.get(header) == "Yes"]
 
-        moves, labels = [], []
+        moves = []
 
         for ply, node in enumerate(game.mainline()):
-            color: Color = "black" if ply % 2 else "white"
-            clock, time = node.clock(), node.emt()
+            move = MoveRecord(ply=ply, uci=node.move.uci(), time=node.emt())
+            move.label = move.color in engines
 
-            if clock is not None:
-                time = round(clocks[color] + control.increment - clock, 1)
-                clocks[color] = clock
+            if (clock := node.clock()) is not None:
+                move.time = round(clocks[move.color] + control.increment - clock, 1)
+                clocks[move.color] = clock
 
-            moves.append(MoveBase(ply=ply, uci=node.move.uci(), time=time))
-
-            if color in engines:
-                labels.append(LabelBase(color=color, ply=ply))
+            moves.append(move)
 
         return GameRecord(
             source=source,
@@ -98,5 +95,4 @@ class Converter:
             control=control,
             played=cls.played(headers),
             moves=moves,
-            labels=labels,
         )
