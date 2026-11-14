@@ -24,7 +24,7 @@ class PipelineContext:
             if feature.analysis_id == self.analysis.id:
                 return feature
 
-        feature = FeatureBase(analysis_id=self.analysis.id, ply=move.ply)
+        feature = FeatureBase(analysis_id=self.analysis.id)
         move.features.append(feature)
         return feature
 

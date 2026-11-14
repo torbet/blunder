@@ -38,10 +38,6 @@ class GameRecord(RecordBase, GameBase):
         cheaters = {move.color for move in self.moves if move.label}
         return "white" in cheaters, "black" in cheaters
 
-    @property
-    def features(self) -> list[FeatureBase]:
-        return [feature for move in self.moves for feature in move.features]
-
     def positions(self) -> Iterator[chess.Board]:
         board = chess.Board()
         yield board.copy()

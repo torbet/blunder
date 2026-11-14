@@ -80,29 +80,26 @@ class Ingestor:
             raise TypeError("Failed to create game")
 
         for record, game in zip(records, games, strict=True):
-            if not record.features:
+            body = [
+                FeatureCreate(
+                    ply=move.ply,
+                    analysis_id=self.ids[feature.analysis_id],
+                    evaluation=feature.evaluation,
+                    best=feature.best,
+                    probability=feature.probability,
+                    entropy=feature.entropy,
+                    ponder=feature.ponder,
+                    win=feature.win,
+                    draw=feature.draw,
+                    loss=feature.loss,
+                )
+                for move in record.moves
+                for feature in move.features
+            ]
+            if not body:
                 continue
 
-            features = await add_features.asyncio(
-                client=self.client,
-                game_id=game.id,
-                body=[
-                    FeatureCreate(
-                        analysis_id=self.ids[feature.analysis_id],
-                        ply=feature.ply,
-                        evaluation=feature.evaluation,
-                        best=feature.best,
-                        probability=feature.probability,
-                        entropy=feature.entropy,
-                        ponder=feature.ponder,
-                        win=feature.win,
-                        draw=feature.draw,
-                        loss=feature.loss,
-                    )
-                    for feature in record.features
-                ],
-            )
-
+            features = await add_features.asyncio(client=self.client, game_id=game.id, body=body)
             if not isinstance(features, list):
                 raise TypeError("Failed to add features")
 

@@ -52,7 +52,6 @@ class Move(Timestamped, MoveBase):
 
 class FeatureBase(BaseModel):
     analysis_id: UUID
-    ply: int
 
     evaluation: int | None = None
     best: str | None = None
@@ -68,3 +67,4 @@ class FeatureBase(BaseModel):
 
 class Feature(Timestamped, FeatureBase):
     game_id: UUID
+    ply: int
