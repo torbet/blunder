@@ -74,7 +74,7 @@ class Converter:
         clocks = {"white": control.base, "black": control.base}
         engines = [color for color, header in ENGINES.items() if headers.get(header) == "Yes"]
 
-        moves, labels = [], [LabelBase(color=color) for color in engines]
+        moves, labels = [], []
 
         for ply, node in enumerate(game.mainline()):
             color: Color = "black" if ply % 2 else "white"

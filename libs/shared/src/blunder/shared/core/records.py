@@ -24,6 +24,11 @@ class GameRecord(RecordBase, GameBase):
     labels: list[LabelBase] = Field(default_factory=list)
     features: list[FeatureBase] = Field(default_factory=list)
 
+    @property
+    def cheating(self) -> tuple[bool, bool]:
+        colors = {label.color for label in self.labels}
+        return "white" in colors, "black" in colors
+
     def positions(self) -> Iterator[chess.Board]:
         board = chess.Board()
         yield board.copy()

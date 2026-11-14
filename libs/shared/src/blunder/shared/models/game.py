@@ -72,4 +72,4 @@ class Feature(Timestamped, FeatureBase):
 
 class LabelBase(BaseModel):
     color: Color
-    ply: int | None = None
+    ply: int
