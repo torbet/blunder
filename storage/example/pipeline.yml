@@ -1,0 +1,9 @@
+chunk: 100
+
+steps:
+  - type: stockfish
+    depth: 10
+
+  - type: maia
+    model: maia3-23m-ponder
+    batch: 256

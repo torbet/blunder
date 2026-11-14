@@ -14,7 +14,7 @@ wheels/
 
 # Local storage
 storage/*
-!storage/example.pgn
+!storage/example/
 
 # OpenAPI client
 libs/client/src/
