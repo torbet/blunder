@@ -6,8 +6,8 @@ from uuid import UUID
 from rich import progress
 
 from blunder.client import Client
-from blunder.client.api.analyses import create_analyses
-from blunder.client.api.games import add_features, create_games
+from blunder.client.api.analyses import create_analyses, create_features
+from blunder.client.api.games import create_games
 from blunder.client.models import (
     AnalysisCreate,
     Control,
@@ -99,7 +99,7 @@ class Ingestor:
             if not body:
                 continue
 
-            features = await add_features.asyncio(client=self.client, game_id=game.id, body=body)
+            features = await create_features.asyncio(client=self.client, game_id=game.id, body=body)
             if not isinstance(features, list):
                 raise TypeError("Failed to add features")
 

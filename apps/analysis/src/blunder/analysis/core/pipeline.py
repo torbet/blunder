@@ -7,7 +7,7 @@ from rich import progress
 
 from blunder.shared.analysis import PipelineConfig
 from blunder.shared.core.records import AnalysisRecord, GameRecord, MoveRecord, Record
-from blunder.shared.models.game import FeatureBase
+from blunder.shared.models.analysis import FeatureBase
 
 
 class PipelineContext:

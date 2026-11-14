@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 import chess
 from pydantic import BaseModel, Field, TypeAdapter
 
-from blunder.shared.models.analysis import AnalysisBase
-from blunder.shared.models.game import Color, FeatureBase, GameBase, Label, MoveBase
+from blunder.shared.models.analysis import AnalysisBase, FeatureBase
+from blunder.shared.models.game import Color, GameBase, Label, MoveBase
 
 
 class RecordBase(BaseModel):
