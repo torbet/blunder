@@ -78,7 +78,7 @@ class Converter:
 
         for ply, node in enumerate(game.mainline()):
             move = MoveRecord(ply=ply, uci=node.move.uci(), time=node.emt())
-            move.label = move.color in engines
+            move.label = move.color in engines if source == "fics" else None
 
             if (clock := node.clock()) is not None:
                 move.time = round(clocks[move.color] + control.increment - clock, 1)

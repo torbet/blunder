@@ -19,7 +19,7 @@ class AnalysisRecord(RecordBase, AnalysisBase):
 
 
 class MoveRecord(MoveBase):
-    label: bool = False
+    label: bool | None = None
     features: list[FeatureBase] = Field(default_factory=list)
 
     @property
@@ -32,7 +32,9 @@ class GameRecord(RecordBase, GameBase):
     moves: list[MoveRecord]
 
     @property
-    def label(self) -> tuple[bool, bool]:
+    def label(self) -> tuple[bool, bool] | None:
+        if any(move.label is None for move in self.moves):
+            return None
         cheaters = {move.color for move in self.moves if move.label}
         return "white" in cheaters, "black" in cheaters
 
