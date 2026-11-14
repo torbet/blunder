@@ -45,21 +45,21 @@ class Ingestor:
     async def _ingest(self, kind: str, batch: tuple[Record, ...]) -> None:
         match kind:
             case "analysis":
-                await self._ingest_analysis([r for r in batch if r.type == "analysis"])
+                await self._ingest_analyses([r for r in batch if r.type == "analysis"])
             case "game":
-                await self._ingest_game([r for r in batch if r.type == "game"])
+                await self._ingest_games([r for r in batch if r.type == "game"])
 
-    async def _ingest_analysis(self, records: list[AnalysisRecord]) -> None:
+    async def _ingest_analyses(self, records: list[AnalysisRecord]) -> None:
         analyses = await create_analyses.asyncio(
             client=self.client, body=[AnalysisCreate(config=self._config(record)) for record in records]
         )
         if not isinstance(analyses, list):
-            raise TypeError("Failed to create analysis")
+            raise TypeError("Failed to create analyses")
 
         for record, analysis in zip(records, analyses, strict=True):
             self.ids[record.id] = analysis.id
 
-    async def _ingest_game(self, records: list[GameRecord]) -> None:
+    async def _ingest_games(self, records: list[GameRecord]) -> None:
         games = await create_games.asyncio(
             client=self.client,
             body=[
@@ -77,13 +77,20 @@ class Ingestor:
             ],
         )
         if not isinstance(games, list):
-            raise TypeError("Failed to create game")
+            raise TypeError("Failed to create games")
 
         for record, game in zip(records, games, strict=True):
+            self.ids[record.id] = game.id
+
+        await self._ingest_features(records)
+
+    async def _ingest_features(self, records: list[GameRecord]) -> None:
+        for record in records:
+            game_id = self.ids[record.id]
             body = [
                 FeatureCreate(
-                    ply=move.ply,
                     analysis_id=self.ids[feature.analysis_id],
+                    ply=move.ply,
                     evaluation=feature.evaluation,
                     best=feature.best,
                     probability=feature.probability,
@@ -99,9 +106,9 @@ class Ingestor:
             if not body:
                 continue
 
-            features = await create_features.asyncio(client=self.client, game_id=game.id, body=body)
+            features = await create_features.asyncio(client=self.client, game_id=game_id, body=body)
             if not isinstance(features, list):
-                raise TypeError("Failed to add features")
+                raise TypeError("Failed to create features")
 
     @staticmethod
     def _config(record: AnalysisRecord) -> PipelineConfig:
