@@ -35,9 +35,14 @@ class Converter:
         with path.open() as f:
             games = islice(iter(lambda: chess.pgn.read_game(f), None), limit)
 
-            for game in progress.track(games, total=limit, description="Converting"):
+            for game in progress.track(games, total=limit or self.count(path), description="Converting"):
                 if not game.errors and self.supported(game.headers):
                     yield self.record(game)
+
+    @staticmethod
+    def count(path: Path) -> int:
+        with path.open("rb") as f:
+            return sum(line.startswith(b"[Event ") for line in f)
 
     @staticmethod
     def supported(headers: chess.pgn.Headers) -> bool:
