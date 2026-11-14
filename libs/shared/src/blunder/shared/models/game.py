@@ -9,6 +9,7 @@ from blunder.shared.models import Identifiable, Timestamped
 type Color = Literal["white", "black"]
 type Result = Literal["white", "black", "draw"]
 type Source = Literal["fics", "synthetic", "chesscom", "lichess"]
+type Label = tuple[bool, bool]
 
 
 class Players(BaseModel):

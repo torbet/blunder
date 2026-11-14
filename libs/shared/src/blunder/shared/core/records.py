@@ -7,7 +7,7 @@ import chess
 from pydantic import BaseModel, Field, TypeAdapter
 
 from blunder.shared.models.analysis import AnalysisBase
-from blunder.shared.models.game import Color, FeatureBase, GameBase, MoveBase
+from blunder.shared.models.game import Color, FeatureBase, GameBase, Label, MoveBase
 
 
 class RecordBase(BaseModel):
@@ -32,7 +32,7 @@ class GameRecord(RecordBase, GameBase):
     moves: list[MoveRecord]
 
     @property
-    def label(self) -> tuple[bool, bool] | None:
+    def label(self) -> Label | None:
         if any(move.label is None for move in self.moves):
             return None
         cheaters = {move.color for move in self.moves if move.label}
