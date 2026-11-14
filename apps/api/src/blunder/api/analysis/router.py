@@ -10,14 +10,6 @@ from blunder.api.game.models import Game
 router = APIRouter(prefix="/analyses", tags=["analyses"])
 
 
-@router.get("/{analysis_id}")
-async def get_analysis(analysis_id: UUID, session: Session) -> AnalysisRead:
-    analysis = await session.get(Analysis, analysis_id)
-    if not analysis:
-        raise HTTPException(status_code=404, detail="Analysis not found")
-    return AnalysisRead.model_validate(analysis)
-
-
 @router.post("/")
 async def create_analyses(body: list[AnalysisCreate], session: Session) -> list[AnalysisRead]:
     analyses = [Analysis(**analysis.model_dump()) for analysis in body]
