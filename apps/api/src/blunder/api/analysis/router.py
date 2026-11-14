@@ -23,6 +23,8 @@ async def create_features(game_id: UUID, body: list[FeatureCreate], session: Ses
     game = await session.get(Game, game_id)
     if not game:
         raise HTTPException(status_code=404, detail="Game not found")
+    if not {feature.ply for feature in body} <= {move.ply for move in game.moves}:
+        raise HTTPException(status_code=422, detail="Unknown ply")
     features = [Feature(game_id=game_id, **feature.model_dump()) for feature in body]
     session.add_all(features)
     await session.commit()
