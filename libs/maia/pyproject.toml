@@ -4,7 +4,6 @@ version = "0.1.0"
 dependencies = [
     "blunder-shared",
     "maia3",
-    "torch>=2.16.0.dev0",
 ]
 
 [build-system]
@@ -17,9 +16,3 @@ packages = ["src/blunder"]
 [tool.uv.sources]
 blunder-shared = { workspace = true }
 maia3 = { git = "https://github.com/daniel-monroe/maia3", branch = "rmponder" }
-torch = { index = "pytorch-nightly" }
-
-[[tool.uv.index]]
-name = "pytorch-nightly"
-url = "https://download.pytorch.org/whl/nightly/cpu"
-explicit = true
