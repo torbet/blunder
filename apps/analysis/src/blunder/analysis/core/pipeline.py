@@ -19,15 +19,6 @@ class PipelineContext:
     def games(self) -> list[GameRecord]:
         return [r for r in self.records if r.type == "game"]
 
-    def feature(self, move: MoveRecord) -> FeatureBase:
-        for feature in move.features:
-            if feature.analysis_id == self.analysis.id:
-                return feature
-
-        feature = FeatureBase(analysis_id=self.analysis.id)
-        move.features.append(feature)
-        return feature
-
     @property
     def moves(self) -> list[MoveRecord]:
         return [move for game in self.games for move in game.moves]

@@ -123,6 +123,7 @@ source = { editable = "apps/analysis" }
 dependencies = [
     { name = "blunder-maia" },
     { name = "blunder-shared" },
+    { name = "blunder-stockfish" },
     { name = "safetensors" },
 ]
 
@@ -130,6 +131,7 @@ dependencies = [
 requires-dist = [
     { name = "blunder-maia", editable = "libs/maia" },
     { name = "blunder-shared", editable = "libs/shared" },
+    { name = "blunder-stockfish", editable = "libs/stockfish" },
     { name = "safetensors", specifier = ">=0.8.0" },
 ]
 

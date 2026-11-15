@@ -4,6 +4,7 @@ version = "0.1.0"
 dependencies = [
     "blunder-maia",
     "blunder-shared",
+    "blunder-stockfish",
     "safetensors>=0.8.0",
 ]
 
@@ -21,3 +22,4 @@ packages = ["src/blunder"]
 [tool.uv.sources]
 blunder-maia = { workspace = true }
 blunder-shared = { workspace = true }
+blunder-stockfish = { workspace = true }
