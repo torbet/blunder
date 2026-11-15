@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 import chess
 from pydantic import BaseModel, Field, TypeAdapter
 
-from blunder.shared.models.analysis import AnalysisBase, FeatureBase
+from blunder.shared.models.analysis import AnalysisBase, FeatureBase, GamePredictionBase, MovePredictionBase
 from blunder.shared.models.game import Color, GameBase, Label, MoveBase
 
 
@@ -21,6 +21,7 @@ class AnalysisRecord(RecordBase, AnalysisBase):
 class MoveRecord(MoveBase):
     label: bool | None = None
     features: list[FeatureBase] = Field(default_factory=list)
+    predictions: list[MovePredictionBase] = Field(default_factory=list)
 
     @property
     def color(self) -> Color:
@@ -30,6 +31,7 @@ class MoveRecord(MoveBase):
 class GameRecord(RecordBase, GameBase):
     type: Literal["game"] = "game"
     moves: list[MoveRecord]
+    predictions: list[GamePredictionBase] = Field(default_factory=list)
 
     @property
     def label(self) -> Label | None:
@@ -60,12 +62,12 @@ class Records:
                 yield cls.adapter.validate_json(line)
 
     @staticmethod
-    def count(path: Path) -> int:
-        with path.open("rb") as f:
-            return sum(1 for _ in f)
-
-    @staticmethod
     async def save(records: AsyncIterable[Record], path: Path) -> None:
         with path.open("w") as f:
             async for record in records:
                 f.write(record.model_dump_json() + "\n")
+
+    @staticmethod
+    def count(path: Path) -> int:
+        with path.open("rb") as f:
+            return sum(1 for _ in f)

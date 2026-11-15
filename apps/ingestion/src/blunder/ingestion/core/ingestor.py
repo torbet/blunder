@@ -6,7 +6,12 @@ from uuid import UUID
 from rich import progress
 
 from blunder.client import Client
-from blunder.client.api.analyses import create_analyses, create_features
+from blunder.client.api.analyses import (
+    create_analyses,
+    create_features,
+    create_game_predictions,
+    create_move_predictions,
+)
 from blunder.client.api.games import create_games
 from blunder.client.models import (
     AnalysisCreate,
@@ -14,8 +19,10 @@ from blunder.client.models import (
     Elos,
     FeatureCreate,
     GameCreate,
+    GamePredictionCreate,
     MaiaConfig,
     MoveCreate,
+    MovePredictionCreate,
     PipelineConfig,
     Players,
     Result,
@@ -83,6 +90,7 @@ class Ingestor:
             self.ids[record.id] = game.id
 
         await self._ingest_features(records)
+        await self._ingest_predictions(records)
 
     async def _ingest_features(self, records: list[GameRecord]) -> None:
         for record in records:
@@ -109,6 +117,37 @@ class Ingestor:
             features = await create_features.asyncio(client=self.client, game_id=game_id, body=body)
             if not isinstance(features, list):
                 raise TypeError("Failed to create features")
+
+    async def _ingest_predictions(self, records: list[GameRecord]) -> None:
+        for record in records:
+            game_id = self.ids[record.id]
+            moves = [
+                MovePredictionCreate(
+                    analysis_id=self.ids[prediction.analysis_id], ply=move.ply, cheating=prediction.cheating
+                )
+                for move in record.moves
+                for prediction in move.predictions
+            ]
+            games = [
+                GamePredictionCreate(
+                    analysis_id=self.ids[prediction.analysis_id],
+                    neither=prediction.neither,
+                    white=prediction.white,
+                    black=prediction.black,
+                    both=prediction.both,
+                )
+                for prediction in record.predictions
+            ]
+
+            if moves:
+                result = await create_move_predictions.asyncio(client=self.client, game_id=game_id, body=moves)
+                if not isinstance(result, list):
+                    raise TypeError("Failed to create move predictions")
+
+            if games:
+                result = await create_game_predictions.asyncio(client=self.client, game_id=game_id, body=games)
+                if not isinstance(result, list):
+                    raise TypeError("Failed to create game predictions")
 
     @staticmethod
     def _config(record: AnalysisRecord) -> PipelineConfig:

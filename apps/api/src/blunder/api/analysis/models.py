@@ -34,3 +34,26 @@ class Feature(Base):
     win: Mapped[float | None]
     draw: Mapped[float | None]
     loss: Mapped[float | None]
+
+
+class MovePrediction(Base):
+    __tablename__ = "move_predictions"
+    __table_args__ = (ForeignKeyConstraint(["game_id", "ply"], ["moves.game_id", "moves.ply"], ondelete="CASCADE"),)
+
+    game_id: Mapped[UUID] = mapped_column(ForeignKey("games.id"), primary_key=True)
+    analysis_id: Mapped[UUID] = mapped_column(ForeignKey("analyses.id"), primary_key=True)
+    ply: Mapped[int] = mapped_column(primary_key=True)
+
+    cheating: Mapped[float]
+
+
+class GamePrediction(Base):
+    __tablename__ = "game_predictions"
+
+    game_id: Mapped[UUID] = mapped_column(ForeignKey("games.id"), primary_key=True)
+    analysis_id: Mapped[UUID] = mapped_column(ForeignKey("analyses.id"), primary_key=True)
+
+    neither: Mapped[float]
+    white: Mapped[float]
+    black: Mapped[float]
+    both: Mapped[float]
