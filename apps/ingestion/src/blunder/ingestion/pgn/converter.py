@@ -34,9 +34,8 @@ class Converter:
     async def convert(self, path: Path, limit: int | None = None) -> AsyncGenerator[GameRecord]:
         with path.open() as f:
             games = islice(iter(lambda: chess.pgn.read_game(f), None), limit)
-
             for game in progress.track(games, total=limit or self.count(path), description="Converting"):
-                if not game.errors and self.supported(game.headers):
+                if game.variations and not game.errors and self.supported(game.headers):
                     yield self.record(game)
 
     @staticmethod
