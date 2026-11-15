@@ -4,6 +4,7 @@ version = "0.1.0"
 dependencies = [
     "blunder-maia",
     "blunder-shared",
+    "safetensors>=0.8.0",
 ]
 
 [project.scripts]
