@@ -1,0 +1,43 @@
+seed: 0
+model: maia3-23m-ponder
+batch: 100
+depth: 10
+
+elos:
+  mean: 1600
+  deviation: 200
+  gap: 25
+
+controls:
+  - base: 180
+    increment: 0
+
+  - base: 300
+    increment: 0
+
+  - base: 600
+    increment: 0
+
+  - base: 180
+    increment: 2
+
+styles:
+  - name: aggressive
+    regret: 0
+    entropy: 0
+
+  - name: steady
+    regret: 50
+    entropy: 0
+
+  - name: selective
+    regret: 150
+    entropy: 0
+
+  - name: occasional
+    regret: 400
+    entropy: 0
+
+  - name: complex
+    regret: 50
+    entropy: 2.0

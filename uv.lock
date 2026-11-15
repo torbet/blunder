@@ -16,6 +16,7 @@ members = [
     "blunder-maia",
     "blunder-shared",
     "blunder-stockfish",
+    "blunder-synthetic",
 ]
 
 [[package]]
@@ -234,6 +235,23 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [{ name = "blunder-shared", editable = "libs/shared" }]
+
+[[package]]
+name = "blunder-synthetic"
+version = "0.1.0"
+source = { editable = "apps/synthetic" }
+dependencies = [
+    { name = "blunder-maia" },
+    { name = "blunder-shared" },
+    { name = "blunder-stockfish" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "blunder-maia", editable = "libs/maia" },
+    { name = "blunder-shared", editable = "libs/shared" },
+    { name = "blunder-stockfish", editable = "libs/stockfish" },
+]
 
 [[package]]
 name = "certifi"
