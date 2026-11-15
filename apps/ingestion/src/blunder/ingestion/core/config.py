@@ -1,8 +1,8 @@
 from functools import cache
 
-from dotenv import find_dotenv
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from blunder.shared.core.config import BaseSettings
 
 
 class APISettings(BaseModel):
@@ -23,8 +23,6 @@ class IngestionSettings(BaseModel):
 class Settings(BaseSettings):
     api: APISettings
     ingestion: IngestionSettings
-
-    model_config = SettingsConfigDict(env_nested_delimiter="__", env_file=find_dotenv(), extra="ignore")
 
 
 @cache
