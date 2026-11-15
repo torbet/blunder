@@ -1,4 +1,5 @@
 import math
+import random
 from collections import deque
 from collections.abc import Iterable, Iterator, Sequence
 from itertools import batched, chain, islice
@@ -12,7 +13,7 @@ from maia3.model_registry import resolve_checkpoint_path, resolve_model_spec
 from maia3.uci import load_model
 from maia3.utils import get_all_possible_moves, mirror_move
 
-from blunder.shared.core.records import GameRecord
+from blunder.shared.core.records import GameRecord, MoveRecord
 from blunder.shared.models.analysis import MaiaFeature
 
 
@@ -22,6 +23,9 @@ class Input(NamedTuple):
     legal: list[str]
     elos: tuple[int, int]
     played: str | None
+
+
+type Assessment = tuple[dict[str, float], MaiaFeature]
 
 
 class Maia:
@@ -38,44 +42,58 @@ class Maia:
 
     def features(self, games: Sequence[GameRecord]) -> list[MaiaFeature]:
         """The features of every move played in the games."""
-        return self._assess(chain.from_iterable(islice(self._inputs(game), len(game.moves)) for game in games))
+        inputs = chain.from_iterable(islice(self._inputs(game), len(game.moves)) for game in games)
+        return [feature for _, feature in self._assess(inputs)]
 
-    def _inputs(self, game: GameRecord) -> Iterator[Input]:
-        """The model input before each ply, tokenising each board once."""
+    def play(self, games: Sequence[GameRecord]) -> list[tuple[MoveRecord, MaiaFeature]]:
+        """Each game's next move, sampled from the policy and labelled fair, with the features of its position."""
+        assessments = self._assess(next(self._inputs(game, len(game.moves))) for game in games)
+        moves = []
+
+        for game, (policy, feature) in zip(games, assessments, strict=True):
+            uci = random.choices(list(policy), list(policy.values()))[0]
+            moves.append((MoveRecord(ply=len(game.moves), uci=uci, label=False), feature))
+
+        return moves
+
+    def _inputs(self, game: GameRecord, start: int = 0) -> Iterator[Input]:
+        """The model input before each ply from `start` to the end, tokenising each board once."""
         board, history = chess.Board(), deque(maxlen=self.config.history)
         white, black = game.elos.white, game.elos.black
 
         for ply, clock in enumerate(game.clocks()):
-            history.append(tokenize_board(board))
+            if ply > start - self.config.history:
+                history.append(tokenize_board(board))
 
             played = game.moves[ply].uci if ply < len(game.moves) else None
 
-            tokens = get_historical_tokens(
-                list(history),
-                self.config,
-                base=game.control.base,
-                inc=game.control.increment,
-                clk_left_before=clock,
-                clk_ponder=0.0,
-            )
-            elos = (white, black) if board.turn else (black, white)
-            yield Input(tokens, board.turn, [move.uci() for move in board.legal_moves], elos, played)
+            if ply >= start:
+                tokens = get_historical_tokens(
+                    list(history),
+                    self.config,
+                    base=game.control.base,
+                    inc=game.control.increment,
+                    clk_left_before=clock,
+                    clk_ponder=0.0,
+                )
+                elos = (white, black) if board.turn else (black, white)
+                yield Input(tokens, board.turn, [move.uci() for move in board.legal_moves], elos, played)
 
             if played:
                 board.push_uci(played)
 
     @torch.inference_mode()
-    def _assess(self, inputs: Iterable[Input]) -> list[MaiaFeature]:
+    def _assess(self, inputs: Iterable[Input]) -> list[Assessment]:
         return [assessment for batch in batched(inputs, self.batch) for assessment in self._batch(batch)]
 
-    def _batch(self, batch: tuple[Input, ...]) -> list[MaiaFeature]:
+    def _batch(self, batch: tuple[Input, ...]) -> list[Assessment]:
         tokens = torch.stack([item.tokens for item in batch]).to(self.config.device)
         mover, opponent = torch.tensor([item.elos for item in batch]).T.to(self.config.device)
 
         logits, values, ponders = self.model(tokens, mover, opponent)
         logits, values, ponders = logits.cpu(), values.softmax(-1).tolist(), ponders.tolist()
 
-        features = []
+        assessments = []
 
         for item, row, (loss, draw, win), ponder in zip(batch, logits, values, ponders, strict=True):
             if not item.white:
@@ -92,6 +110,6 @@ class Maia:
                 draw=draw,
                 loss=loss,
             )
-            features.append(feature)
+            assessments.append((policy, feature))
 
-        return features
+        return assessments
