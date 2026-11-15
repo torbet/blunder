@@ -21,13 +21,16 @@ from blunder.client.models import (
     GameCreate,
     GamePredictionCreate,
     MaiaConfig,
+    ModelConfig,
     MoveCreate,
     MovePredictionCreate,
     PipelineConfig,
     Players,
+    PredictConfig,
     Result,
     Source,
     StockfishConfig,
+    TrainConfig,
 )
 from blunder.ingestion.core.config import settings
 from blunder.shared.core.records import AnalysisRecord, GameRecord, Record
@@ -158,4 +161,16 @@ class Ingestor:
                     steps.append(StockfishConfig(depth=step.depth))
                 case "maia":
                     steps.append(MaiaConfig(model=step.model, batch=step.batch))
+                case "train":
+                    steps.append(
+                        TrainConfig(
+                            epochs=step.epochs,
+                            batch=step.batch,
+                            lr=step.lr,
+                            seed=step.seed,
+                            model=ModelConfig(dim=step.model.dim, layers=step.model.layers, heads=step.model.heads),
+                        )
+                    )
+                case "predict":
+                    steps.append(PredictConfig(version=step.version))
         return PipelineConfig(chunk=record.config.chunk, steps=steps)
