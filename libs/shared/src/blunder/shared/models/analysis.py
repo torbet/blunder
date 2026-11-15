@@ -14,12 +14,12 @@ class AnalysisBase(BaseModel):
 class Analysis(Identifiable, AnalysisBase): ...
 
 
-class FeatureBase(BaseModel):
-    analysis_id: UUID
-
+class StockfishFeature(BaseModel):
     evaluation: int | None = None
     best: str | None = None
 
+
+class MaiaFeature(BaseModel):
     probability: float | None = None
     entropy: float | None = None
     ponder: float | None = None
@@ -27,6 +27,10 @@ class FeatureBase(BaseModel):
     win: float | None = None
     draw: float | None = None
     loss: float | None = None
+
+
+class FeatureBase(StockfishFeature, MaiaFeature):
+    analysis_id: UUID
 
 
 class Feature(Timestamped, FeatureBase):
