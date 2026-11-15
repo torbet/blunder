@@ -17,7 +17,7 @@ flowchart LR
 
 - **Records** are JSONL, one game per line, with its moves, features and predictions.
 - **Features** come from Stockfish and Maia.
-- **Predictions** give the chance that each move was engine-assisted.
+- **Predictions** give the probability that each move was engine-assisted.
 - **Outcomes** are `neither`, `white`, `black` or `both`.
 
 ## Layout
