@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, Iterable
+from collections.abc import AsyncGenerator, Iterable, Sequence
 from contextlib import AsyncExitStack, asynccontextmanager
 from itertools import batched
 
@@ -7,7 +7,7 @@ from rich import progress
 
 from blunder.shared.analysis import PipelineConfig
 from blunder.shared.core.records import AnalysisRecord, GameRecord, MoveRecord, Record
-from blunder.shared.models.analysis import FeatureBase
+from blunder.shared.models.analysis import FeatureBase, MaiaFeature, StockfishFeature
 
 
 class PipelineContext:
@@ -27,6 +27,22 @@ class PipelineContext:
         feature = FeatureBase(analysis_id=self.analysis.id)
         move.features.append(feature)
         return feature
+
+    @property
+    def moves(self) -> list[MoveRecord]:
+        return [move for game in self.games for move in game.moves]
+
+    def merge(self, parts: Sequence[StockfishFeature | MaiaFeature]) -> None:
+        """Merge one feature per move, in game order, into the moves' features of this analysis."""
+        for move, part in zip(self.moves, parts, strict=True):
+            feature = next((f for f in move.features if f.analysis_id == self.analysis.id), None)
+
+            if feature is None:
+                feature = FeatureBase(analysis_id=self.analysis.id)
+                move.features.append(feature)
+
+            for name, value in part:
+                setattr(feature, name, value)
 
 
 class PipelineStep(ABC):

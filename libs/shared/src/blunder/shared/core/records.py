@@ -40,6 +40,15 @@ class GameRecord(RecordBase, GameBase):
         cheaters = {move.color for move in self.moves if move.label}
         return "white" in cheaters, "black" in cheaters
 
+    def clocks(self) -> Iterator[float]:
+        left = [self.control.base] * 2
+
+        for ply, move in enumerate(self.moves):
+            yield left[ply % 2]
+            left[ply % 2] += self.control.increment - (move.time or 0)
+
+        yield left[len(self.moves) % 2]
+
     def positions(self) -> Iterator[chess.Board]:
         board = chess.Board()
         yield board.copy()
